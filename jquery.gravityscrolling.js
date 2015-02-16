@@ -34,10 +34,20 @@ SOFTWARE.
     $.fn.gravityScroll = function(method) {
 		
 		var settings;
+		
+		// The original container that gravityScroll() is attached to.
 		var $original_container;
+		
+		// We sometimes have to change the container to something that works better than what the user provided. i.e. $('body')
 		var $container;
+		
+		// The container that works better for scroll events. i.e. $('html,body')
 		var $scroll_container;
+		
+		// The container that works better for animating scrolling. i.e. $(document)
 		var $animation_container;
+		
+		// All the children elements
 		var $children = $();
 		
         var methods = {
