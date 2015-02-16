@@ -34,7 +34,10 @@ SOFTWARE.
     $.fn.gravityScroll = function(method) {
 		
 		var settings;
+		var $original_container;
 		var $container;
+		var $scroll_container;
+		var $animation_container;
 		var $children = $();
 		
         var methods = {
@@ -43,7 +46,16 @@ SOFTWARE.
 				if ( ! settings.children.length ) {
 					return;	
 				}
-				$container = this;
+				$original_container = $container = this;
+				
+				// If the container is not able to handle scroll events, use the the best alternatives instead.
+				if ( $container.is($('html,body')) || $container.is($(settings.window)) ) {
+					$container = $('body');
+					$scroll_container = $(document);
+					$animation_container = $('body,html');
+				} else {
+					$scroll_container = $container;
+				}
 				
 				helpers.addChildren( settings.children );
 				helpers.attachScrollHandler();
@@ -57,8 +69,9 @@ SOFTWARE.
 			
 			// Register children with the plugin while setting their data attributes
 			addChild: function( child ) {
-				var info = $.extend({}, $container.gravityScroll.child_defaults, child);					
+				var info = $.extend({}, $original_container.gravityScroll.child_defaults, child);					
 				var $child = $(info.selector);
+				helpers.log( 'Adding child', $child );
 				$child.data('gravityscroll-pause', info.pause);
 				$child.data('gravityscroll-range', info.range);
 				$child.data('gravityscroll-easing', info.easing);
@@ -78,12 +91,12 @@ SOFTWARE.
 				if ( $container.data( 'gravityscroll-hashandler' ) === '1' ) {
 					return;	
 				}
-				$container.scroll(function(e) {
+				$scroll_container.scroll(function(e) {
 					// Ensure scroll events don't take up too much CPU by calling only before animation frame change.
 					window.requestAnimationFrame( helpers.scrollHandler );
 				});
 				$container.data( 'gravityscroll-hashandler', '1' );
-				$container.scroll();
+				$scroll_container.scroll();
 			},
 			
 			// Return all children who we might potentially scroll to
@@ -112,9 +125,22 @@ SOFTWARE.
 			
 			// Get relative position between two elements.
 			getRelativePosition: function( of, to ) {
+				helpers.log( 'getRelativePosition', of, to );
+				helpers.log( settings.document, settings.window );
+				var of_offset, to_offset;
+				if ( of.is(settings.document) ) {
+					of_offset = { 'left': settings.window.scrollLeft(), 'top': settings.window.scrollTop() };
+				} else {
+					of_offset = of.offset();	
+				}
+				if ( to.is(settings.document) ) {
+					to_offset = { 'left': settings.window.scrollLeft(), 'top': settings.window.scrollTop() };
+				} else {
+					to_offset = to.offset();
+				}
 				return [
-					of.offset().left - to.offset().left,
-					of.offset().top - to.offset().top
+					of_offset.left - to_offset.left,
+					of_offset.top - to_offset.top
 				];
 			},
 			
@@ -131,7 +157,7 @@ SOFTWARE.
 			// Pixel distance that $element is away from $container
 			positionFromContainer: function( element ) {
 				var $element = element;
-				return helpers.getRelativePosition( $element, $container )[1];
+				return helpers.getRelativePosition( $element, $scroll_container )[1];
 			},
 			
 			// Called on the container when the user scrolls.
@@ -150,7 +176,7 @@ SOFTWARE.
 					return;
 				}
 				// When the continer has finished scrolling...
-				helpers.whenFinishedScrollMovement( $container ).done( function() {
+				helpers.whenFinishedScrollMovement( $scroll_container ).done( function() {
 					helpers.log( 'Stopped' );
 					$container.data('gravityscroll-scrolling','0');
 					$container.data('gravityscroll-moving','0');
@@ -215,21 +241,24 @@ SOFTWARE.
 					return;
 				}
 				$container.data('gravityscroll-currentpause', pause);
-				var relative_position = helpers.getRelativePosition( $element, $container );
-				var position = $container.scrollTop() + parseInt(relative_position[1]);
+				var relative_position = helpers.getRelativePosition( $element, $scroll_container );
+				var position = $animation_container.scrollTop() + parseInt(relative_position[1]);
 				helpers.log( 'Scrolling container to ', position );
 				$container.data('gravityscroll-animating', '1');
-				$container.stop('gravityscroll-animation-queue').animate({scrollTop:position},{
+				helpers.log('$animation_container.stop()');
+				$animation_container.stop('gravityscroll-animation-queue');
+				helpers.log('$animation_container.animate()');
+				$animation_container.animate({scrollTop:position},{
 					speed: settings.speed,
 					easing: $element.data('gravityscroll-easing'),
 					queue: 'gravityscroll-animation-queue'
 				}).promise().done(function() {
 					helpers.log( 'Completed animation' );
 					$element.data('gravityscroll-indanger', '0' );
-					$(this).data('gravityscroll-animating', '0');
-					$(this).data('gravityscroll-currentpause', '0');
+					$container.data('gravityscroll-animating', '0');
+					$container.data('gravityscroll-currentpause', '0');
 				});
-				$container.dequeue( 'gravityscroll-animation-queue' );
+				$animation_container.dequeue( 'gravityscroll-animation-queue' );
 			},
 			
 			log: function() {
@@ -255,7 +284,9 @@ SOFTWARE.
     }
 	
     $.fn.gravityScroll.defaults = {
-		debug: false
+		debug: false,
+		window: $(window),
+		document: $(document)
     }
 
     $.fn.gravityScroll.child_defaults = {
