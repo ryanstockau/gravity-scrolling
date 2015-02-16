@@ -66,7 +66,7 @@ SOFTWARE.
 				if ( $original_container.is($('html,body')) || $original_container.is($(settings.window)) ) {
 					$container = $('body');
 					$scroll_container = $(document);
-					$animation_container = $('body,html');
+					$animation_container = $('html,body');
 				} else {
 					$container = $original_container;
 					$scroll_container = $original_container;
@@ -107,9 +107,15 @@ SOFTWARE.
 				if ( $container.data( 'gravityscroll-hashandler' ) === '1' ) {
 					return;	
 				}
-				$scroll_container.scroll(function(e) {
-					// Ensure scroll events don't take up too much CPU by calling only before animation frame change.
-					window.requestAnimationFrame( helpers.scrollHandler );
+				helpers.log( 'Adding scroll handler' );
+				//$scroll_container.scroll(function(e) {
+				$scroll_container.bind( 'scroll mousedown wheel DOMMouseScroll mousewheel keyup', function(e) {
+					// If scroll was initiated by the user
+   					if ( e.which > 0 || e.type === "mousedown" || e.type === "mousewheel") {
+						helpers.log('.scroll');
+						// Ensure scroll events don't take up too much CPU by calling only before animation frame change.
+						window.requestAnimationFrame( helpers.scrollHandler );
+					}
 				});
 				$container.data( 'gravityscroll-hashandler', '1' );
 				$scroll_container.scroll();
@@ -141,8 +147,8 @@ SOFTWARE.
 			
 			// Get relative position between two elements.
 			getRelativePosition: function( of, to ) {
-				helpers.log( 'getRelativePosition', of, to );
-				helpers.log( settings.document, settings.window );
+			//	helpers.log( 'getRelativePosition', of, to );
+			//	helpers.log( settings.document, settings.window );
 				var of_offset, to_offset;
 				if ( of.is(settings.document) ) {
 					of_offset = { 'left': settings.window.scrollLeft(), 'top': settings.window.scrollTop() };
@@ -179,6 +185,11 @@ SOFTWARE.
 			// Called on the container when the user scrolls.
             scrollHandler: function() {
 				helpers.log( 'Handling scroll' );
+				if ( $container.data('gravityscroll-animating') ) {
+					helpers.log( '...but animating is still going.' );
+					$container.data('gravityscroll-animating','0');
+					$container.data('gravityscroll-animating','0');
+				}
 				$container.data('gravityscroll-moving','1');
 				clearTimeout( $container.data('gravityscroll-scrollingtimeout') );
 				$container.data('gravityscroll-scrollingtimeout', 
@@ -192,7 +203,7 @@ SOFTWARE.
 					return;
 				}
 				// When the continer has finished scrolling...
-				helpers.whenFinishedScrollMovement( $scroll_container ).done( function() {
+				helpers.whenFinishedScrollMovement( $animation_container ).done( function() {
 					helpers.log( 'Stopped' );
 					$container.data('gravityscroll-scrolling','0');
 					$container.data('gravityscroll-moving','0');
@@ -253,8 +264,10 @@ SOFTWARE.
 				var $element = element;
 				var pause = $element.data('gravityscroll-pause');
 				if ( $container.data('gravityscroll-animating') === '1' ) {
-					helpers.log( 'Already scrolling - ignore.' );
+					helpers.log( 'Already animating - ignore.' );
 					return;
+				} else {
+					helpers.log( 'Not already animating' );					
 				}
 				$container.data('gravityscroll-currentpause', pause);
 				var relative_position = helpers.getRelativePosition( $element, $scroll_container );
@@ -262,28 +275,28 @@ SOFTWARE.
 				helpers.log( 'Scrolling container to ', position );
 				$container.data('gravityscroll-animating', '1');
 				helpers.log('$animation_container.stop()');
-				$animation_container.stop('gravityscroll-animation-queue');
+				$animation_container.stop();
 				helpers.log('$animation_container.animate()');
 				$animation_container.animate({scrollTop:position},{
 					speed: settings.speed,
-					easing: $element.data('gravityscroll-easing'),
-					queue: 'gravityscroll-animation-queue'
+					easing: $element.data('gravityscroll-easing')
 				}).promise().done(function() {
 					helpers.log( 'Completed animation' );
 					$element.data('gravityscroll-indanger', '0' );
 					$container.data('gravityscroll-animating', '0');
 					$container.data('gravityscroll-currentpause', '0');
+					helpers.log( $container.data() );
 				});
-				$animation_container.dequeue( 'gravityscroll-animation-queue' );
 			},
 			
-			log: function() {
+			log: function( message ) {
 				if ( settings.developer ) {
-					if(typeof(console) !== 'undefined'){
+					if( typeof(console) !== 'undefined' ) {
 						console.log.apply(console, arguments);
 					}			
 				}
 			}
+			
         }		
 		// Depending on args sent to gravityScroll()...
         if (methods[method]) {
