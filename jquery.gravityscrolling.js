@@ -59,7 +59,7 @@ SOFTWARE.
 				$original_container = this;
 				
 				// If the container is not able to handle scroll events, use the the best alternatives instead.
-				if ( $container.is($('html,body')) || $container.is($(settings.window)) ) {
+				if ( $original_container.is($('html,body')) || $original_container.is($(settings.window)) ) {
 					$container = $('body');
 					$scroll_container = $(document);
 					$animation_container = $('body,html');
