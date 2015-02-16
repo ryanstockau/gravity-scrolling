@@ -56,7 +56,7 @@ SOFTWARE.
 				if ( ! settings.children.length ) {
 					return;	
 				}
-				$original_container = $container = this;
+				$original_container = this;
 				
 				// If the container is not able to handle scroll events, use the the best alternatives instead.
 				if ( $container.is($('html,body')) || $container.is($(settings.window)) ) {
@@ -64,7 +64,9 @@ SOFTWARE.
 					$scroll_container = $(document);
 					$animation_container = $('body,html');
 				} else {
-					$scroll_container = $container;
+					$container = $original_container;
+					$scroll_container = $original_container;
+					$animation_container = $original_container;
 				}
 				
 				helpers.addChildren( settings.children );
