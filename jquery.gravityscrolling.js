@@ -156,7 +156,7 @@ SOFTWARE.
 					var $closest_match = null;
 					var closest_distance_from_danger = null;
 					var $matches = helpers.getChildrenInDangerZone();
-					helpers.log( 'Subjects found in danger zone: ', $matches.length );
+					helpers.log( 'Children found in danger zone: ', $matches.length );
 					$matches.each(function() {
 						$element = $(this);
 						var distance_from_danger = Math.abs(helpers.positionFromContainer( $element ));
