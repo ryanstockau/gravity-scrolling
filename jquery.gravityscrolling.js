@@ -41,10 +41,10 @@ SOFTWARE.
 		// We sometimes have to change the container to something that works better than what the user provided. i.e. $('body')
 		var $container;
 		
-		// The container that works better for scroll events. i.e. $('html,body')
+		// The container that works better for scroll events. i.e. $original_container or ('html,body')
 		var $scroll_container;
 		
-		// The container that works better for animating scrolling. i.e. $(document)
+		// The container that works better for animating scrolling. i.e. $original_container or $(document)
 		var $animation_container;
 		
 		// All the children elements
