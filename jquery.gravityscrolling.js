@@ -1,7 +1,11 @@
-// Gravity Scrolling jQuery Plugin by Ryan Stock
-// www.github.com/ryanstockau/gravity-scrolling
-
 /*
+
+Gravity Scrolling jQuery Plugin by Ryan Stock
+
+www.github.com/ryanstockau/gravity-scrolling
+
+www.ryanstock.com.au
+
 
 LICENSE
 
