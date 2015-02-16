@@ -67,6 +67,7 @@ SOFTWARE.
 			
 			// Go through children and register them
 			addChildren: function( children ) {
+				helpers.log( 'Adding children', children );
 				for( var i = 0; i < children.length; i++ ) {
 					helpers.addChild( children[i] );
 				}
