@@ -187,8 +187,9 @@ SOFTWARE.
 				helpers.log( 'Handling scroll' );
 				if ( $container.data('gravityscroll-animating') ) {
 					helpers.log( '...but animating is still going.' );
-					$container.data('gravityscroll-animating','0');
-					$container.data('gravityscroll-animating','0');
+					$animation_container.stop();
+					$container.data('gravityscroll-animating', '0');
+					$container.data('gravityscroll-currentpause', '0');
 				}
 				$container.data('gravityscroll-moving','1');
 				clearTimeout( $container.data('gravityscroll-scrollingtimeout') );
@@ -285,7 +286,6 @@ SOFTWARE.
 					$element.data('gravityscroll-indanger', '0' );
 					$container.data('gravityscroll-animating', '0');
 					$container.data('gravityscroll-currentpause', '0');
-					helpers.log( $container.data() );
 				});
 			},
 			
